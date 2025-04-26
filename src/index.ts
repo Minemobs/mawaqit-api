@@ -66,7 +66,7 @@ async function getNextPrayerFormatted(mosquee: string, relative: boolean, userTi
     }
     
     const unit = lessThanAnHour ? "min" : "hours";
-    return `${nextPrayer} in ${lessThanAnHour ? "" : (timeLeft.hours + ":")}${timeLeft.minutes} ${unit}`;
+    return `${nextPrayer} in ${lessThanAnHour ? "" : (timeLeft.hours + ":")}${(timeLeft.minutes < 10 ? "0" : "") + timeLeft.minutes} ${unit}`;
   }
   
   if(userTimeZone === undefined) return date.toISO(); // Etc/UTC timestamp
