@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import { Elysia } from "elysia";
+import cron, { Patterns } from "@elysiajs/cron";
 
 type Times = [string, string, string, string, string];
 
@@ -11,20 +12,6 @@ function getDateFromTime(time: string, timeZone: string) {
   const dateTime = DateTime.fromObject({ hour: hours, minute: minutes }, { zone: timeZone });
   if(dateTime.invalidReason !== null) throw new Error(dateTime.invalidReason + "\n" + dateTime.invalidExplanation);
   return dateTime;
-}
-
-// Was too lazy to write this function, author: https://stackoverflow.com/a/62529100
-function scheduleReset() {
-  let reset = new Date();
-  reset.setHours(24, 0, 0, 0);
-  
-  let t = reset.getTime() - Date.now();
-  
-  setTimeout(function() {
-    timeCache.clear();
-    console.log("Cache cleared");
-    scheduleReset();
-  }, t);
 }
 
 async function getTimesMosquee(mosquee: string): Promise<DateTime[]> {
@@ -91,6 +78,16 @@ async function getNextPrayerFormatted(mosquee: string, relative: boolean, userTi
 }
 
 const app = new Elysia()
+  .use(
+    cron({
+      name: "Clear cache",
+      pattern: Patterns.EVERY_DAY_AT_MIDNIGHT,
+      run() {
+        timeCache.clear();
+        console.info("Cache cleared");
+      }
+    })
+  )
   .get("/", () => "Hello Elysia")
   .get("/times/:mosquee", async ({params: { mosquee }}) => await getTimesMosquee(mosquee))
   .get("/nextPrayer/:mosquee", async ({params: { mosquee }, query}) => await getNextPrayerFormatted(mosquee, false, query["timeZone"]))
@@ -100,7 +97,4 @@ const app = new Elysia()
 console.log(
   `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
 );
-
-scheduleReset();
-
 

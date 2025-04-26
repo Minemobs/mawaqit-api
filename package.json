@@ -8,6 +8,7 @@
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
+    "@elysiajs/cron": "^1.2.0",
     "elysia": "latest",
     "luxon": "^3.6.1"
   },
