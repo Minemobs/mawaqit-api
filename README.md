@@ -1,15 +1,12 @@
-# Elysia with Bun runtime
+# Mawaqit-api
 
-## Getting Started
-To get started with this template, simply paste this command into your terminal:
-```bash
-bun create elysia ./elysia-example
-```
+A simple rest api for mawaqit
 
-## Development
-To start the development server run:
-```bash
-bun run dev
-```
+A public testing instance is at: `https://mawaqit.thesimpleteam.net/`
 
-Open http://localhost:3000/ with your browser to see the result.
+### Paths:
+- `/times/:mosquee`: Returns an array of 5 ISO 8601 datetimes
+- `/nextPrayer/:mosquee`: Returns an ISO 8601 datetime for the next prayer
+- `/nextPrayer/relative/:mosquee`: Returns a formatted string
+
+All paths except relative ones accept a `timeZone` query such as `/nextPrayer/:mosquee?timeZone=Etc/UTC`

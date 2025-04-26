@@ -1,0 +1,6 @@
+services:
+  mawaqit-api:
+    image: ghcr.io/minemobs/mawaqit-api:main
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
