@@ -20,12 +20,12 @@ async function getTimesMosquee(mosquee: string): Promise<DateTime[]> {
   
   const res = await fetch(`https://mawaqit.net/fr/${mosquee}`)
     .then(it => {
-      if(!it.ok) { throw new Error("Invalid mosquee") } else { return it.text() } 
+      if(!it.ok) { throw new Error(`Invalid mosquee: "${it.url}"`) } else { return it.text() } 
     })
-    .catch(_ => undefined);
+    .catch(_ => _);
   
   if(typeof res !== "string") {
-    throw new Error("Invalid mosquee");
+    throw res;
   }
   
   const timesMatch = (/"times":\s*(\[("\d{2}:\d{2}",){4}("\d{2}:\d{2}")])/gm).exec(res)?.[0];
@@ -55,11 +55,16 @@ async function getNextPrayer(mosquee: string): Promise<[string, DateTime]> {
 }
 
 async function getNextPrayerFormatted(mosquee: string, relative: boolean, userTimeZone?: string): Promise<string | null> {
-  const [nextPrayer, date] = await getNextPrayer(mosquee);
+  let [nextPrayer, date] = await getNextPrayer(mosquee);
   
   if(relative) {  
-    //TODO: May be a bug if currentDate > date
-    const timeLeft = date.diffNow(["hour", "minute"]).mapUnits(n => Math.floor(n));
+    let timeLeft = date.diffNow(["hour", "minute"]).mapUnits(n => Math.floor(n));
+    if(timeLeft.hours < 0) {
+      timeCache.delete(mosquee);
+      [nextPrayer, date] = await getNextPrayer(mosquee);
+      timeLeft = date.diffNow(["hour", "minute"]).mapUnits(n => Math.floor(n));
+    }
+
     const lessThanAnHour = timeLeft.hours === 0;
     if(lessThanAnHour && timeLeft.minutes === 0) {
       return `${nextPrayer} now`;
